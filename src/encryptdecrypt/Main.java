@@ -16,6 +16,8 @@ public class Main {
         int key = 0;
         String in = "";
         String out = "";
+        String alg = "shift";
+        Factory factory = new ShiftCryptFactory();
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-mode")) {
@@ -28,71 +30,35 @@ public class Main {
                 in = in + args[i + 1];
             } else if (args[i].equals("-out")) {
                 out = out + args[i + 1];
+            } else if (args[i].equals("-alg")) {
+                alg = args[i + 1];
             }
         }
 
+        if (alg.equals("shift")) {
+            factory = new ShiftCryptFactory();
+        } else if (alg.equals("unicode")) {
+            factory = new UnicodeCryptFactory();
+        }
+
+
         try {
-
-            if (category.equals("enc")) {
-                if (!in.isEmpty()) {
-                    if (!out.isEmpty()) {
-                        write(new File(out), enc(read(new File(in)), key));
-                    } else {
-                        System.out.println(enc(read(new File(in)), key));
-                    }
-                } else {
-                    if (!out.isEmpty()) {
-                        write(new File(out), enc(line, key));
-                    } else {
-                        System.out.println(enc(line, key));
-                    }
-                }
+            String str;
+            if (in.isEmpty()) {
+                str = factory.crypt(category, line, key);
+            } else {
+                str = read(new File(in));
+            }
+            if (out.isEmpty()) {
+                System.out.println(str);
+            } else {
+                write(new File(out), factory.crypt(category, str, key));
             }
 
-            if (category.equals("dec")) {
-                if (!in.isEmpty()) {
-                    if (!out.isEmpty()) {
-                        write(new File(out), dec(read(new File(in)), key));
-                    } else {
-                        System.out.println(dec(read(new File(in)), key));
-                    }
-                } else {
-                    if (!out.isEmpty()) {
-                        write(new File(out), dec(line, key));
-                    } else {
-                        System.out.println(dec(line, key));
-                    }
-                }
-            }
         } catch (Exception e) {
             System.out.println("Error");
         }
-
-
-
-    }
-
-    private static String enc(String line, int key) {
-        char[] message = line.toCharArray();
-        char[] encryptedMessage = new char[message.length];
-        for (int i = 0; i < message.length; i++) {
-            int ch = message[i];
-            int inCh = ch + key;
-            encryptedMessage[i] = (char) inCh;
-        }
-
-        return new String(encryptedMessage);
-    }
-
-    private static String dec(String line, int key) {
-        char[] message = line.toCharArray();
-        char[] encryptedMessage = new char[message.length];
-        for (int i = 0; i < message.length; i++) {
-            int ch = message[i];
-            int inCh = ch - key;
-            encryptedMessage[i] = (char) inCh;
-        }
-        return new String(encryptedMessage);
+        
     }
 
     private static String read(File file) {
